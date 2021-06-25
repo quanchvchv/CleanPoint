@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow: hidden;
+      }
+
+      #start,
+      #game,
+      #end {
+        font-size: 40px;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #start {
+        background-color: lightcoral;
+      }
+
+      #game {
+        background-color: rgb(246, 250, 250);
+        display: none;
+      }
+
+      #end {
+        background-color: lightskyblue;
+        display: none;
+      }
+
+      .container {
+        margin: auto;
+        text-align: center;
+        margin-top: 30px;
+      }
+      .container1 {
+        margin: auto;
+        text-align: center;
+        margin-top: 300px;
+      }
+      .text-center {
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+      }
+
+      button {
+        display: inline-block;
+        padding: 15px 20px;
+        font-size: 24px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        outline: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 230px;
+      }
+      label {
+        font-size: 25px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="start">
+      <div class="container1">
+        <h1>Bắt đầu Game</h1>
+        <div class="text-center">
+          <label for="input">Tên của bạn</label>
+          <input
+            type="text"
+            name="ten"
+            id="input"
+            style="width: 300px; height: 40px; font-size: 20px"
+          />
+          <label for="1">Dễ</label>
+          <input type="radio" name="chedo" id="1" />
+          <label for="2">Trung bình</label>
+          <input type="radio" name="chedo" id="2" />
+          <label for="3">Khó</label>
+          <input type="radio" name="chedo" id="3" />
+          <button id="btn-start">Chơi game</button>
+          <p id="nhap"></p>
+        </div>
+      </div>
+    </div>
+    <div id="game">
+      <div class="container">
+        <h1>Thời gian còn lại: <span id="demnguoc"></span>s</h1>
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+    <div id="end">
+      <div class="container1">
+        <h1><span id="span" style="text-transform: capitalize"></span></h1>
+        <div class="text-center">
+          <button id="btn-restart">Chơi lại</button>
+          <button id="btn-reload">Thoát game</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      canvas.width = 1000;
+      canvas.height = 600;
+      canvas.style.border = "2px solid black";
+      const ctx = canvas.getContext("2d");
+    
+      class Ball {
+        constructor(x, y, r, color) {
+          this.x = x;
+          this.y = y;
+          this.r = r;
+          this.color = color;
+          this.score = 0;
+          this.dx = 0;
+          this.dy = 0;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = this.color;
+          ctx.fill();
+        }
+        drawBoss() {
+          ctx.save();
+          ctx.beginPath();
+          ctx.shadowOffsetX = 3;
+          ctx.shadowOffsetY = 3;
+          ctx.shadowBlur = 10;
+          ctx.shadowColor = "yellowgreen";
+          this.draw();
+          ctx.restore();
+          ctx.beginPath();
+          ctx.font = "italic 20px Arial";
+          ctx.fillStyle = "yellow";
+          ctx.fillText("haha", this.x - 20, this.y + 5);
+        }
+        drawScore() {
+          ctx.beginPath();
+          ctx.font = "italic 50px Arial";
+          ctx.fillStyle = "blueviolet";
+          ctx.fillText(this.score, 100, canvas.height - 5);
+        }
+        move() {
+          this.x += this.dx;
+          this.y += this.dy;
+          if (this.x > canvas.width - this.r || this.x < this.r) {
+            this.dx = -this.dx;
+          }
+          if (this.y > canvas.height - this.r || this.y < this.r) {
+            this.dy = -this.dy;
+          }
+          this.drawBoss();
+        }
+      }
+
+      let ball = new Ball(30, 30, 30, "red");
+      ball.drawBoss();
+
+      function randomPoint(d, r) {
+        return Math.floor(Math.random() * (d - r * 2) + r);
+      }
+      function random_rgb_color_code() {
+        return `rgb(${Math.floor(Math.random() * 255)},${Math.floor(
+          Math.random() * 255
+        )},${Math.floor(Math.random() * 255)})`;
+      }
+      let array = [];
+      function arrayPoint(point) {
+        for (let i = 0; i < point; i++) {
+          let r = Math.floor(Math.random() * (20 - 10) + 10);
+          let x = randomPoint(canvas.width, r);
+          let y = randomPoint(canvas.height, r);
+          if (x < 60 || y < 60) {
+            x += 60;
+            y += 60;
+          }
+          let temp = new Ball(x, y, r, random_rgb_color_code());
+          array.push(temp);
+        }
+      }
+      let v = 10;
+      function speed(e) {
+        if (e.keyCode == 37) {
+          if (5 <= array.length && array.length <= 10) {
+            ball.dx = -v;
+            ball.dy = 0;
+          } else {
+            ball.dx = -v - 3;
+            ball.dy = 0;
+          }
+        } else if (e.keyCode == 39) {
+          if (5 <= array.length && array.length <= 10) {
+            ball.dx = v;
+            ball.dy = 0;
+          } else {
+            ball.dx = v + 3;
+            ball.dy = 0;
+          }
+        } else if (e.keyCode == 38) {
+          if (5 <= array.length && array.length <= 10) {
+            ball.dx = 0;
+            ball.dy = -v;
+          } else {
+            ball.dx = 0;
+            ball.dy = -v - 3;
+          }
+        } else if (e.keyCode == 40) {
+          if (5 <= array.length && array.length <= 10) {
+            ball.dx = 0;
+            ball.dy = v;
+          } else {
+            ball.dx = 0;
+            ball.dy = v + 3;
+          }
+        } else if (e.keyCode == 13) {
+          ball.dx = 0;
+          ball.dy = 0;
+        }
+      }
+      addEventListener("keydown", speed);
+      function vacham() {
+        for (let i = 0; i < array.length; i++) {
+          if (
+            Math.sqrt(
+              (ball.x - array[i].x) * (ball.x - array[i].x) +
+                (ball.y - array[i].y) * (ball.y - array[i].y)
+            ) <=
+            ball.r + array[i].r
+          ) {
+            array.splice(i, 1);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            array.forEach((e) => e.draw());
+            ball.r = ball.r + 0.15;
+            ball.score++;
+            new Audio(
+              "http://dight310.byu.edu/media/audio/FreeLoops.com/5/5/Mouse%20Click%20Fast.wav-23232-Free-Loops.com.mp3"
+            ).play();
+          }
+        }
+      }
+      let point = -10;
+      function out() {
+        var ten = document.getElementById("input");
+        var ten1 = document.getElementById("span");
+        if (ball.score == point) {
+          endGame.style.display = "block";
+          game.style.display = "none";
+          ball.r = 30;
+          ten1.innerText = `${ten.value} Đã Thắng`;
+        } else {
+          ten1.innerText = `${ten.value} Đã Thua `;
+        }
+      }
+      let chedode = 0;
+      let chedotb = 0;
+      let chedokho = 0;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ball.move();
+        vacham();
+        ball.drawScore();
+        array.forEach((e) => e.draw());
+        chedode = document.getElementById("1").checked;
+        chedotb = document.getElementById("2").checked;
+        chedokho = document.getElementById("3").checked;
+        if (array.length == 0) {
+          ball.dx = 0;
+          ball.dy = 0;
+        }
+        out();
+      }
+
+      animate();
+      let option = [
+        {
+          point: 20,
+          v: 10,
+          time: 15,
+        },
+        {
+          point: 30,
+          v: 12,
+          time: 20,
+        },
+        {
+          point: 40,
+          v: 15,
+          time: 25,
+        },
+      ];
+
+      const startGame = document.getElementById("start");
+      const game = document.getElementById("game");
+      const endGame = document.getElementById("end");
+      const btn_start = document.getElementById("btn-start");
+      const btn_restart = document.getElementById("btn-restart");
+      const btn_reload = document.getElementById("btn-reload");
+      const ten = document.getElementById("input");
+      let count = 0;
+      btn_start.addEventListener("click", function () {
+        if (chedode) {
+          dokho(option[0]);
+        } else if (chedotb) {
+          dokho(option[1]);
+        } else if (chedokho) {
+          dokho(option[2]);
+        } else {
+          document.getElementById("nhap").innerText = "Mời bạn chọn chế độ";
+        }
+      });
+
+      function dokho(temp) {
+        count = temp.time;
+        document.getElementById("demnguoc").innerText = temp.time;
+        v = temp.v;
+        point = temp.point;
+        startGame.style.display = "none";
+        game.style.display = "block";
+        arrayPoint(temp.point);
+      }
+      setInterval(function countDown() {
+        var timer = document.getElementById("demnguoc");
+        if (count > 0) {
+          count--;
+          timer.innerHTML = count;
+        } else if (count == 0) {
+          endGame.style.display = "block";
+          game.style.display = "none";
+        }
+      }, 1000);
+      btn_restart.addEventListener("click", function () {
+        endGame.style.display = "none";
+        game.style.display = "block";
+        ball.score = 0;
+        ball.r = 30;
+        if (chedode) {
+          reset(option[0]);
+        } else if (chedotb) {
+          reset(option[1]);
+        } else if (chedokho) {
+          reset(option[02]);
+        }
+      });
+      function reset(temp) {
+        arrayPoint(temp.point);
+        count = temp.time;
+        ball.x = ball.r;
+        ball.y = ball.r;
+        ball.dx = 0;
+        ball.dy = 0;
+      }
+      btn_reload.addEventListener("click", function () {
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>
